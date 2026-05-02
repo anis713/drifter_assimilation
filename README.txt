@@ -55,8 +55,8 @@ Choose your strategy by setting METHOD in Section 4 of the notebook:
 
 1. Clone the repository
 
-     git clone https://github.com/<your-username>/<repo-name>.git
-     cd <repo-name>
+     git clone https://github.com/anis713/drifter_assimilation
+     cd drifter_assimilation
 
 2. Install dependencies
 
