@@ -1,0 +1,13 @@
+# Data files (large — do not commit)
+data/*.nc
+data/*.h5
+output/
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+.ipynb_checkpoints/
+
+# OS
+.DS_Store
