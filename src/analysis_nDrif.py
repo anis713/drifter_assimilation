@@ -167,7 +167,6 @@ def RMS_per_window_new(Ut, Vt, Uo, Vo):
 
     U_other = Uo.detach().cpu().numpy()
     V_other = Vo.detach().cpu().numpy()
-
     
     # Merge the time dimensions: (days * steps_per_day, lon, lat)
     if U_other.ndim == 4:
@@ -180,7 +179,6 @@ def RMS_per_window_new(Ut, Vt, Uo, Vo):
         V_interp_flat = V_other
         U_true_flat = U_true
         V_true_flat = V_true
-
     # Squared differences
     du_sq = (U_true_flat - U_interp_flat) ** 2
     dv_sq = (V_true_flat - V_interp_flat) ** 2
@@ -190,14 +188,17 @@ def RMS_per_window_new(Ut, Vt, Uo, Vo):
     denom = U_true_flat**2 + V_true_flat**2
 
     # Sum over spatial dimensions (lon, lat)
-    num_sum = np.sum(num, axis=(1, 2))
-    denom_sum = np.sum(denom, axis=(1, 2))
-
+    # num_sum = np.sum(num, axis=(1, 2))
+    # denom_sum = np.sum(denom, axis=(1, 2))
+    num_sum = np.nansum(num, axis=(1, 2))
+    denom_sum = np.nansum(denom, axis=(1, 2))
+    
     # Avoid division by zero
     denom_sum[denom_sum == 0] = np.nan
 
     # Time-dependent RMS error, output shape: (days * steps_per_day,)
     error = np.sqrt(num_sum / denom_sum)*100
+
     return error
 
 def RMS_per_window(truth, other):
@@ -651,7 +652,6 @@ def multi_analysis_optm(Ut, Vt, Ub, Vb, lon, lat, lon0, lat0, maskuu, maskvv, as
         Ub_int, Vb_int = field_int_new(Ub, Vb, dtAdvection)
         
         
-        
         RMS_back_t.extend(RMS_per_window_new(Ut_int, Vt_int, Ub_int, Vb_int))
         
 
@@ -685,7 +685,6 @@ def multi_analysis_optm(Ut, Vt, Ub, Vb, lon, lat, lon0, lat0, maskuu, maskvv, as
             lat0_t = torch.as_tensor(lat0, device=device, dtype=dtype).flatten()
             lon_0.copy_(lon0_t)
             lat_0.copy_(lat0_t)
-        print(lon_0[0].reshape(1))
         # The correction
         dU = torch.nn.Parameter(torch.zeros((1, *Ut[0].shape), device=device, dtype=dtype))
         dV = torch.nn.Parameter(torch.zeros((1, *Vt[0].shape), device=device, dtype=dtype))
