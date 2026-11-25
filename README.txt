@@ -38,9 +38,16 @@ of the notebook.
 
   project_root/
   ├── data/
-  │   ├── back_stand.nc            Background field (altimetry), July 2006
-  │   └── truth_inter.nc           Truth field (reanalysis interpolated onto
-  │                                the altimetry grid), July 2006
+  │   ├── raw/
+  │   │   ├── raw_data.zip         Raw CMEMS downloads, July 2006 (included,
+  │   │   │                        unzip before the first run)
+  │   │   ├── (new_aviso)cmems_obs-sl_glo_phy-ssh_...nc        background
+  │   │   └── (new_reanalysis)cmems_mod_med_phy-cur_...nc      truth
+  │   │                                                (both from raw_data.zip)
+  │   ├── back_stand.nc            Standardised background   (generated)
+  │   ├── truth_stand.nc           Standardised truth        (generated)
+  │   └── truth_inter.nc           Truth interpolated onto the altimetry
+  │                                grid                      (generated)
   ├── notebooks/
   │   ├── assimilation.ipynb       Main notebook  <- start here
   │   └── assim_nb/                Configuration, result readers, figures and
@@ -71,7 +78,15 @@ of the notebook.
    MP4 movies need ffmpeg (e.g. `brew install ffmpeg`); without it the
    notebook writes GIFs.
 
-3. Open the notebook from the notebooks/ folder and run all cells
+3. Unzip the raw data (once). The two raw .nc files are compressed in
+   data/raw/raw_data.zip and must be extracted before running the notebook:
+
+     unzip data/raw/raw_data.zip -d data/raw
+
+   Without unzip:  python -m zipfile -e data/raw/raw_data.zip data/raw
+   (or extract it with your file manager into data/raw/).
+
+4. Open the notebook from the notebooks/ folder and run all cells
 
      cd notebooks/
      jupyter notebook assimilation.ipynb
@@ -81,9 +96,12 @@ of the notebook.
      jupyter nbconvert --to notebook --execute notebooks/assimilation.ipynb \
          --output-dir <folder>
 
-The input files in data/ are included, so the default experiment (two
-drifters, 3 days, in the Levantine basin) runs without downloading anything.
-Results go to output/notebooks/.
+The raw input files are included in data/raw/raw_data.zip (37 MB, 107 MB
+unzipped). Once they are unzipped, the first run of the notebook preprocesses
+them (Section 2b) into the files in data/, so the default
+experiment (two drifters, 3 days, in the Levantine basin) runs without
+downloading anything. Results go to output/notebooks/.
+
 
 
 --------------------------------------------------------------------------------
@@ -108,17 +126,20 @@ products, freely available at:
     Variables: uo, vo  (3-D ocean currents)
     Resolution: ~4.2 km, daily
 
-The files in data/ are subsets of these products: daily surface currents for
-1-31 July 2006 over 6W-36.5E, 30N-46N, on the 0.125 deg altimetry grid, with
-variables ugos, vgos and dimensions (time, latitude, longitude). They are
-distributed under the Copernicus Marine Service licence and were generated
-using E.U. Copernicus Marine Service Information.
+The files in data/raw/raw_data.zip are subsets of these products, downloaded
+unchanged:
+daily surface currents for 1-31 July 2006 over the Mediterranean Sea
+(6W-36.5E, 30N-46N). They are distributed under the Copernicus Marine Service
+licence and were generated using E.U. Copernicus Marine Service Information.
 
-To use other dates or regions, download the two products and either replace
-the files in data/, or delete them and set raw_truth / raw_back in the
-configuration cell: the notebook then builds them from the raw downloads, read
-from the folder in the environment variable DRIFTERS_RAW_DIR (default
-data/raw/).
+The notebook's preprocessing (Section 2b) renames the velocities to ugos/vgos,
+drops the depth axis and interpolates the reanalysis onto the 0.125 deg
+altimetry grid. It runs only when the generated files in data/ are missing.
+
+To use other dates or regions, download the two products into data/raw/ (or
+into the folder named by the environment variable DRIFTERS_RAW_DIR), set
+raw_truth / raw_back in the configuration cell, and delete the generated
+files in data/ so they are rebuilt.
 
 Other gridded NetCDF products should work provided they contain surface
 zonal and meridional velocity components on a regular grid.

@@ -1,9 +1,7 @@
-# Data: only the two input files the notebook needs are committed
+# Data: only data/raw/raw_data.zip is committed; unzipped and generated files are not
 data/*.nc
-!data/back_stand.nc
-!data/truth_inter.nc
+data/raw/*.nc
 data/*.h5
-data/raw/
 output/
 
 # Python

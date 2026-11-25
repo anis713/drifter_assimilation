@@ -202,6 +202,10 @@ def _input_problems(cfg: Config) -> list[str]:
         if not raw.exists():
             problems.append(f"Raw file {raw.name} not found in {_show(raw.parent, cfg.root)} "
                             f"(needed to build {names}). Put it there, or {hint[0].lower()}{hint[1:]}")
+    archive = cfg.raw_truth.parent / "raw_data.zip"
+    if problems and archive.exists():
+        problems.append(f"{_show(archive, cfg.root)} holds the raw files: unzip it first, from the "
+                        f"repository root: unzip data/raw/raw_data.zip -d data/raw")
     return problems
 
 
