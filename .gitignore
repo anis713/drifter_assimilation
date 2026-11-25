@@ -1,6 +1,9 @@
-# Data files (large — do not commit)
+# Data: only the two input files the notebook needs are committed
 data/*.nc
+!data/back_stand.nc
+!data/truth_inter.nc
 data/*.h5
+data/raw/
 output/
 
 # Python

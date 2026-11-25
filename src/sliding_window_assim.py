@@ -266,10 +266,10 @@ def multi_analysis_sliding_window(
 
         # ---- Optimisable correction: time-independent within window ------
         dU = torch.nn.Parameter(
-            torch.zeros((1, Nlat[0], Nlon[0]), device=device, dtype=dtype)
+            torch.zeros((1, Nlon[0], Nlat[0]), device=device, dtype=dtype)
         )
         dV = torch.nn.Parameter(
-            torch.zeros((1, Nlat[0], Nlon[0]), device=device, dtype=dtype)
+            torch.zeros((1, Nlon[0], Nlat[0]), device=device, dtype=dtype)
         )
         optimizer = torch.optim.Adam([dU, dV], lr=mylr)
 
@@ -471,8 +471,8 @@ def multi_analysis_sliding_window(
     win_adv_end   = [k * sigma_adv_steps + Tw_adv_steps for k in range(K)]
 
     # Correction tensors at full advection resolution (CPU, then moved to device)
-    corr_U = torch.zeros(nAdvTotal + 1, Nlat[0], Nlon[0], dtype=dtype)
-    corr_V = torch.zeros(nAdvTotal + 1, Nlat[0], Nlon[0], dtype=dtype)
+    corr_U = torch.zeros(nAdvTotal + 1, Nlon[0], Nlat[0], dtype=dtype)
+    corr_V = torch.zeros(nAdvTotal + 1, Nlon[0], Nlat[0], dtype=dtype)
 
     for t in range(nAdvTotal + 1):
         # ---- All windows whose time interval contains adv step t ----------
@@ -494,8 +494,8 @@ def multi_analysis_sliding_window(
         raw_w = {k: 1.0 / (abs(k - k_star) + 1.0) for k in valid_ks}
         w_sum = sum(raw_w.values())
 
-        cu = torch.zeros(Nlat[0], Nlon[0], dtype=dtype)
-        cv = torch.zeros(Nlat[0], Nlon[0], dtype=dtype)
+        cu = torch.zeros(Nlon[0], Nlat[0], dtype=dtype)
+        cv = torch.zeros(Nlon[0], Nlat[0], dtype=dtype)
         for k in valid_ks:
             w_k = raw_w[k] / w_sum
             dU_k, dV_k = delta_u_list[k]
@@ -598,11 +598,11 @@ def reconstruct_from_saved(
     win_adv_start = [k * sigma_adv_steps              for k in range(K)]
     win_adv_end   = [k * sigma_adv_steps + Tw_adv_steps for k in range(K)]
 
-    Nlat_n = Ub.shape[1]
-    Nlon_n = Ub.shape[2]
+    Nlon_n = Ub.shape[1]
+    Nlat_n = Ub.shape[2]
 
-    corr_U = torch.zeros(nAdvTotal + 1, Nlat_n, Nlon_n, dtype=dtype)
-    corr_V = torch.zeros(nAdvTotal + 1, Nlat_n, Nlon_n, dtype=dtype)
+    corr_U = torch.zeros(nAdvTotal + 1, Nlon_n, Nlat_n, dtype=dtype)
+    corr_V = torch.zeros(nAdvTotal + 1, Nlon_n, Nlat_n, dtype=dtype)
 
     for t in range(nAdvTotal + 1):
         valid_ks = [
@@ -619,8 +619,8 @@ def reconstruct_from_saved(
         raw_w = {k: 1.0 / (abs(k - k_star) + 1.0) for k in valid_ks}
         w_sum = sum(raw_w.values())
 
-        cu = torch.zeros(Nlat_n, Nlon_n, dtype=dtype)
-        cv = torch.zeros(Nlat_n, Nlon_n, dtype=dtype)
+        cu = torch.zeros(Nlon_n, Nlat_n, dtype=dtype)
+        cv = torch.zeros(Nlon_n, Nlat_n, dtype=dtype)
         for k in valid_ks:
             w_k = raw_w[k] / w_sum
             dU_k, dV_k = delta_u_list[k]

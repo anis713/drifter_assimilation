@@ -701,8 +701,8 @@ def multi_analysis_optm(Ut, Vt, Ub, Vb, lon, lat, lon0, lat0, maskuu, maskvv, as
                                              mylatIN = lat_0[nd-1].reshape(1), 
                                              Ut=Ub + dU, Vt=Vb + dV, lon=lon, lat=lat,
                                              dtAdvection=dtAdvection)
-            traj_back_grp.create_dataset(lon_back_name, data=lon_back.detach().numpy(), compression="gzip")
-            traj_back_grp.create_dataset(lat_back_name, data=lat_back.detach().numpy(), compression="gzip")
+            traj_back_grp.create_dataset(lon_back_name, data=lon_back.detach().cpu().numpy(), compression="gzip")
+            traj_back_grp.create_dataset(lat_back_name, data=lat_back.detach().cpu().numpy(), compression="gzip")
            
         
         count = 0
@@ -847,8 +847,8 @@ def multi_analysis_optm(Ut, Vt, Ub, Vb, lon, lat, lon0, lat0, maskuu, maskvv, as
                                              mylatIN = lat_0[nd-1].reshape(1), 
                                              Ut=Ub + dUFil, Vt=Vb + dVFil, lon=lon, lat=lat,
                                              dtAdvection=dtAdvection)
-            traj_last_grp.create_dataset(lon_last_name, data=lon_last.detach().numpy(), compression="gzip")
-            traj_last_grp.create_dataset(lat_last_name, data=lat_last.detach().numpy(), compression="gzip")
+            traj_last_grp.create_dataset(lon_last_name, data=lon_last.detach().cpu().numpy(), compression="gzip")
+            traj_last_grp.create_dataset(lat_last_name, data=lat_last.detach().cpu().numpy(), compression="gzip")
                         
             print(f'done: time window {window+1}!!')
             obj_name = f'obj_fct_behavior_window{window+1}_{nDaysSim}days_fil{lfil}_alp{alpha:.6f}_bet{beta:.6f}_toll{toll:.2f}_lr{mylr:.6f}'
@@ -1643,8 +1643,8 @@ def run_onTruth_new(Ut, Vt, lon, lat, nDaysSim, obs_grp, dtAdvection, lon0, lat0
             del obs_grp[lat_name]
         lon_sim, lat_sim = simul_drifter (mylonIN=mylon0, mylatIN=mylat0,
                         Ut=Ut, Vt=Vt, lon=lon, lat=lat, dtAdvection=dtAdvection)
-        obs_grp.create_dataset(lon_name, data=lon_sim, compression="gzip")
-        obs_grp.create_dataset(lat_name, data=lat_sim, compression="gzip")
+        obs_grp.create_dataset(lon_name, data=lon_sim.detach().cpu().numpy(), compression="gzip")
+        obs_grp.create_dataset(lat_name, data=lat_sim.detach().cpu().numpy(), compression="gzip")
         
 
     print("Trajectory simulated on the Truth!!")

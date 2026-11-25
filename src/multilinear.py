@@ -1,6 +1,6 @@
-import torch
 from itertools import product
-
+import os
+import torch
 assert hasattr(
     torch, "bucketize"), "Need torch >= 1.7.0; install at pytorch.org"
 
@@ -55,7 +55,7 @@ class RegularGridInterpolator:
         for indexer in product([0, 1], repeat=self.n):
             as_s = [idx[onoff] for onoff, idx in zip(indexer, idxs)]
             bs_s = [dist[1 - onoff] for onoff, dist in zip(indexer, dists)]
-            numerator += self.values[as_s] * \
+            numerator += self.values[tuple(as_s)] * \
                 torch.prod(torch.stack(bs_s), dim=0)
         denominator = torch.prod(torch.stack(overalls), dim=0)
         return numerator / denominator

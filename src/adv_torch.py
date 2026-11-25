@@ -222,10 +222,10 @@ def fromMetersToDeg(du,dv,lat_deg):
     return dun, dvn
 
 def fromDegToMeters(mylon, mylat):
-    phi = (2 * math.pi * mylat) / 360
-    theta = (2 * math.pi * mylon) / 360
-    x = R_earth * theta * math.cos(phi)
-    y = R_earth * phi
+    phi = (2 * math.pi * mylat) / 360;
+    theta = (2 * math.pi * mylon) / 360;
+    x = R_earth * theta * math.cos(phi);
+    y = R_earth * phi;
     return x, y
 
 
@@ -247,17 +247,6 @@ def avgVfield(Ut, Vt, nDaysSim):
     V_sum = torch.sum(V, dim=0)
     avgU = U_sum/nDaysSim
     avgV = V_sum/nDaysSim
-    return avgU, avgV
-
-def avgVfield_np(Ut, Vt, nDaysSim):
-    U = np.transpose(Ut, axes=(0, 2, 1))
-    V = np.transpose(Vt, axes=(0, 2, 1))
-
-    U_sum = np.sum(U, axis=0)
-    V_sum = np.sum(V, axis=0)
-
-    avgU = U_sum / nDaysSim
-    avgV = V_sum / nDaysSim
     return avgU, avgV
 
 
@@ -425,8 +414,7 @@ def diverg_penalty(dU, dV, lat, lon, eps=1e-12):
     dv_dy[:, -1] = (dV[:, -1] - dV[:, -2]) / (deltay[:, -1] + eps)
 
     div_correction = du_dx + dv_dy
-    #N = div_correction.numel() # for normalization
-    return  torch.linalg.norm(div_correction) #/ torch.sqrt(torch.tensor(N, device=device, dtype=dtype))  # scalar
+    return torch.linalg.norm(div_correction)   # scalar
 
 
 def simul_drifter(mylonIN, mylatIN, Ut, Vt, lon, lat, dtAdvection, simfile=None):
@@ -678,7 +666,7 @@ def GenerateCoefs(lat, lon, Nlat, Nlon, maskuu, maskvv, lfil, device, dtype=None
 
 def ApplyFilter(dU, dV, Nlat, Nlon, fileu, filev, dx, dy, masku, maskv, coeffc, coeffd, lfil):
     """
-    SAME algorithm (same update order + in-place). Assumes all inputs already on torch.device.
+    SAME algorithm (same update order + in-place). Assumes all inputs already on CUDA.
     """
 
     # quick safety checks (remove later if you want max speed)

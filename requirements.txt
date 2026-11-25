@@ -1,7 +1,14 @@
-numpy
-xarray
-netCDF4
 torch
-h5py
-matplotlib
+numpy
 scipy
+xarray
+dask          # xr.open_dataset(..., chunks=...) needs it
+netCDF4
+h5py
+pandas
+tqdm
+matplotlib
+cartopy       # optional: coastlines (plots fall back to plain axes without it)
+ipykernel
+nbconvert
+# ffmpeg (system package, e.g. `brew install ffmpeg`) for MP4 movies; GIF otherwise

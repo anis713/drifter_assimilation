@@ -16,18 +16,20 @@ The method optimises a correction field dU that, when added to a background
 velocity field Ub (e.g. from satellite altimetry), minimises the mismatch
 between simulated and observed drifter trajectories.
 
-Two assimilation strategies are provided:
+Two assimilation strategies are provided, and the notebook runs and compares
+both:
 
   standard  (multi_analysis_optm)
-      dU is a constant correction field within each sequential analysis window.
+      dU is a constant correction field within each of n_corr sequential
+      sub-windows.
 
   sliding   (multi_analysis_sliding_window)
-      Overlapping Gaussian-weighted windows reconstruct a continuous dU(t)
-      over the full assimilation period.
+      Corrections fitted on overlapping windows of Tw_days, shifted by
+      sigma_days, are blended into a time-continuous dU(t) with weights
+      1/(|k-k*|+1) (Eq. 5 of Issa et al. 2016).
 
-Choose your strategy by setting METHOD in Section 4 of the notebook:
-
-    METHOD = "standard"   # or "sliding"
+Choose which ones to run with `methods` in the configuration cell (Section 1)
+of the notebook.
 
 
 --------------------------------------------------------------------------------
@@ -35,18 +37,22 @@ Choose your strategy by setting METHOD in Section 4 of the notebook:
 --------------------------------------------------------------------------------
 
   project_root/
-  ├── data/                        Input .nc files and preprocessed outputs
-  │   ├── back_stand.nc            Standardised background field  (generated)
-  │   ├── truth_stand.nc           Standardised truth field       (generated)
-  │   └── truth_stand_inter.nc     Interpolated truth field       (generated)
-  ├── output/                      Experiment results (.h5 files)
+  ├── data/
+  │   ├── back_stand.nc            Background field (altimetry), July 2006
+  │   └── truth_inter.nc           Truth field (reanalysis interpolated onto
+  │                                the altimetry grid), July 2006
+  ├── notebooks/
+  │   ├── assimilation.ipynb       Main notebook  <- start here
+  │   └── assim_nb/                Configuration, result readers, figures and
+  │                                movies (no assimilation code)
+  ├── output/                      Results, logs, figures, movies (generated)
   └── src/
-      ├── assim_nb.ipynb           Main notebook  ← start here
-      ├── analysis_nDrif.py        Core engine: preprocessing, advection,
+      ├── analysis_nDrif.py        Preprocessing, synthetic observations,
       │                            standard assimilation
       ├── sliding_window_assim.py  Sliding-window assimilation
-      ├── reading_routines.py      NetCDF reading and scanning utilities
-      └── plots.py                 Visualisation routines
+      ├── adv_torch.py             RK4 advection, smoothing filter,
+      │                            divergence penalty
+      └── multilinear.py           Differentiable bilinear interpolation
 
 
 --------------------------------------------------------------------------------
@@ -62,20 +68,22 @@ Choose your strategy by setting METHOD in Section 4 of the notebook:
 
      pip install -r requirements.txt
 
-3. Download input data  (see DATA section below)
+   MP4 movies need ffmpeg (e.g. `brew install ffmpeg`); without it the
+   notebook writes GIFs.
 
-4. Place your .nc files in data/ and update the filenames in Section 2
-   of the notebook:
+3. Open the notebook from the notebooks/ folder and run all cells
 
-     back_filename  = "your_background_file.nc"
-     truth_filename = "your_truth_file.nc"
+     cd notebooks/
+     jupyter notebook assimilation.ipynb
 
-5. Open the notebook
+   Or run it headless from the repository root:
 
-     cd src/
-     jupyter notebook assim_nb.ipynb
+     jupyter nbconvert --to notebook --execute notebooks/assimilation.ipynb \
+         --output-dir <folder>
 
-6. Run all cells in order.
+The input files in data/ are included, so the default experiment (two
+drifters, 3 days, in the Levantine basin) runs without downloading anything.
+Results go to output/notebooks/.
 
 
 --------------------------------------------------------------------------------
@@ -100,6 +108,18 @@ products, freely available at:
     Variables: uo, vo  (3-D ocean currents)
     Resolution: ~4.2 km, daily
 
+The files in data/ are subsets of these products: daily surface currents for
+1-31 July 2006 over 6W-36.5E, 30N-46N, on the 0.125 deg altimetry grid, with
+variables ugos, vgos and dimensions (time, latitude, longitude). They are
+distributed under the Copernicus Marine Service licence and were generated
+using E.U. Copernicus Marine Service Information.
+
+To use other dates or regions, download the two products and either replace
+the files in data/, or delete them and set raw_truth / raw_back in the
+configuration cell: the notebook then builds them from the raw downloads, read
+from the folder in the environment variable DRIFTERS_RAW_DIR (default
+data/raw/).
+
 Other gridded NetCDF products should work provided they contain surface
 zonal and meridional velocity components on a regular grid.
 
@@ -108,13 +128,13 @@ zonal and meridional velocity components on a regular grid.
   KEY ASSIMILATION PARAMETERS
 --------------------------------------------------------------------------------
 
-  lfil          Gaussian filter half-width              [m]      default: 15000
+  lfil          Filter length scale                     [m]      default: 15000
   alpha         Weight on ||dU||^2 regularisation term           default: 0.001
   beta          Weight on divergence penalty                      default: 0.1
   mylr          Adam learning rate                                default: 0.01
   toll          Convergence tolerance on relative ||grad L||      default: 1.0
   n_corr        Number of sequential windows (standard only)      default: 3
-  Tw_days       Window width in days          (sliding only)      default: 3
+  tw_days       Window width in days          (sliding only)      default: 1
   sigma_days    Window shift in days          (sliding only)      default: 1
 
 
