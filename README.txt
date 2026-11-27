@@ -52,6 +52,8 @@ of the notebook.
   │   ├── assimilation.ipynb       Main notebook  <- start here
   │   └── assim_nb/                Configuration, result readers, figures and
   │                                movies (no assimilation code)
+  ├── ml/                          Learning optimal release locations
+  │                                (see MACHINE LEARNING below)
   ├── output/                      Results, logs, figures, movies (generated)
   └── src/
       ├── analysis_nDrif.py        Preprocessing, synthetic observations,
@@ -59,6 +61,8 @@ of the notebook.
       ├── sliding_window_assim.py  Sliding-window assimilation
       ├── adv_torch.py             RK4 advection, smoothing filter,
       │                            divergence penalty
+      ├── manifolds.py             Fixed points and unstable manifolds
+      │                            (baseline release strategy)
       └── multilinear.py           Differentiable bilinear interpolation
 
 
@@ -102,6 +106,84 @@ them (Section 2b) into the files in data/, so the default
 experiment (two drifters, 3 days, in the Levantine basin) runs without
 downloading anything. Results go to output/notebooks/.
 
+
+
+--------------------------------------------------------------------------------
+  MACHINE LEARNING: OPTIMAL DRIFTER RELEASE LOCATIONS
+--------------------------------------------------------------------------------
+
+Code for "Learning Optimal Drifter Release Locations for Surface Current
+Estimation in the Levantine Mediterranean" (Hammoud, Brajard and Issa).
+
+A U-Net is trained to predict, from the first-day background (altimetry) and
+true (reanalysis) velocities on a 16 x 16 grid, the gain map: the relative
+RMSE reduction (in %) obtained by assimilating a single drifter released at
+each point of the inner 10 x 10 grid. The predicted maps guide where drifters
+are released, and the result is compared with releases near the unstable
+manifold of the flow.
+
+Scripts in ml/, in the order they are run (all settings are in ml/config.py):
+
+  01_training_size.py         Validation/test loss vs. number of training
+                              years
+  02_cv_architecture.py       Blocked 5-fold cross-validation of the
+                              architecture (--experiment depth | width_dropout)
+  03_train_ensemble.py        Trains the 20 final models (fixed 26 epochs,
+                              seeds 0-19) and the ensemble-size curve
+  04_evaluate_ensemble.py     12-member bagged prediction on the test set,
+                              regression and classification metrics
+                              (--region A | B)
+  05_deployment_experiments.py
+                              Drifter releases with the assimilation of src/:
+                              50 random releases in the CNN-predicted positive
+                              region and near the unstable manifold, and single
+                              releases at the predicted maximum and at the
+                              manifold point of smallest det(J)
+                              (--region A | B, --sample N | --all)
+  06_summarize_deployments.py Figures 6-9 and the mu_t scores
+                              (--region A | B, --release random | deterministic)
+  fig_accuracy.py             Figure 4   (test-set classification accuracy)
+  fig_overlays.py             Figure 5   (true vs. predicted classes)
+  fig_mahalanobis.py          Figure 10  (input distribution shift)
+  fig_vorticity.py            Figure 11  (gain vs. reanalysis vorticity)
+
+Helper modules: config.py, data.py, model.py, training.py, ensemble.py,
+plotting.py.
+
+Example (from the repository root):
+
+  python ml/03_train_ensemble.py
+  python ml/04_evaluate_ensemble.py --region A
+  python ml/05_deployment_experiments.py --region A --all
+  python ml/06_summarize_deployments.py --region A --release random
+
+Data. The gain-map datasets are HDF5 files with one group per weekly sample
+(map_YYYY-MM-DD_to_YYYY-MM-DD/io_map/ with Ub, Vb, Ut, Vt of shape
+(7, 16, 16) indexed (day, lon, lat), lon, lat and rdrmse of shape (10, 10)).
+They are expected in data/ml/:
+
+  region_A.h5               Region A, weekly samples from 1993 (training,
+                            validation and test)
+  region_B.h5               Region B, inputs only (generalisation, no
+                            retraining)
+  region_B_test_truth.h5    True gain maps of the 160 Region B test samples
+
+They will be archived with the trained models on Zenodo. The code that
+generates them (one assimilation per grid point and week, run on an HPC
+cluster) will be added to this repository.
+
+Split (53 weekly samples per year block): validation = blocks 14 and 18,
+test = from block 28 on (Region A: 11 Nov 2022 - 31 Jul 2025, 133 samples),
+training = blocks 4-27 except the validation blocks.
+
+Environment variables:
+
+  DRIFTERS_ML_DATA      data folder              (default: data/ml)
+  DRIFTERS_ML_OUTPUT    results folder           (default: output/ml)
+  DRIFTERS_ML_WORKERS   parallel workers for 01/02
+
+Training uses the CPU; the 05 experiments take several hours per region
+because each release runs a full sliding-window assimilation.
 
 
 --------------------------------------------------------------------------------

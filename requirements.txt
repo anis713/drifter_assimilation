@@ -8,6 +8,7 @@ h5py
 pandas
 tqdm
 matplotlib
+scikit-learn  # ml/: PCA and Ledoit-Wolf covariance (fig_mahalanobis.py)
 cartopy       # optional: coastlines (plots fall back to plain axes without it)
 ipykernel
 nbconvert

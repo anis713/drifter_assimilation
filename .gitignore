@@ -2,6 +2,7 @@
 data/*.nc
 data/raw/*.nc
 data/*.h5
+data/ml/
 output/
 
 # Python
