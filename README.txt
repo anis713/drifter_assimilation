@@ -115,6 +115,9 @@ downloading anything. Results go to output/notebooks/.
 Code for "Learning Optimal Drifter Release Locations for Surface Current
 Estimation in the Levantine Mediterranean" (Hammoud, Brajard and Issa).
 
+  Code (this repository, archived) : https://doi.org/10.5281/zenodo.24584649
+  Datasets and trained models      : https://doi.org/10.5281/zenodo.24584829
+
 A U-Net is trained to predict, from the first-day background (altimetry) and
 true (reanalysis) velocities on a 16 x 16 grid, the gain map: the relative
 RMSE reduction (in %) obtained by assimilating a single drifter released at
@@ -168,9 +171,11 @@ They are expected in data/ml/:
                             retraining)
   region_B_test_truth.h5    True gain maps of the 160 Region B test samples
 
-They will be archived with the trained models on Zenodo. The code that
-generates them (one assimilation per grid point and week, run on an HPC
-cluster) will be added to this repository.
+They are archived with the trained models at
+https://doi.org/10.5281/zenodo.24584829. Place the model folders
+(model_seed_XX/model.pth) in output/ml/ensemble/ to use them without
+retraining. The code that generates the datasets (one assimilation per grid
+point and week, run on an HPC cluster) will be added to this repository.
 
 Split (53 weekly samples per year block): validation = blocks 14 and 18,
 test = from block 28 on (Region A: 11 Nov 2022 - 31 Jul 2025, 133 samples),
